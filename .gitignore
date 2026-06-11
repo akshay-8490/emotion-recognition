@@ -37,7 +37,7 @@ env/
 .env
 
 # Local project specific model weights (do not push heavy models to GitHub)
-models/
+model_weights/
 
 # Generated story outputs and temporary files
 *.mp4
