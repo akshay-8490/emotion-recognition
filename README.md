@@ -36,22 +36,53 @@ By analyzing facial expressions and voice recordings, Dreamweaver dynamically ad
 
 ```text
 C:\Users\aadid\Desktop\Emotion Recognition\
- ├── models\                       # Model Weight Files (Ignored by Git)
- │    ├── facial\
+ ├── app.py                          # Streamlit thin orchestrator (entry point)
+ ├── config.py                       # Central configuration parameters
+ ├── requirements.txt                # Python package dependencies
+ ├── README.md                       # Repository documentation
+ ├── .gitignore                      # Git ignored files & paths
+ │
+ ├── model_weights/                  # Local directory for trained weights (Git Ignored)
+ │    ├── facial/
  │    │    └── best_face_model_stage2_3class.pth
- │    ├── audio\
+ │    ├── audio/
  │    │    ├── ensemble_audio_model.pth
  │    │    └── final_best_audio_model.pth
- │    └── fusion\
+ │    └── fusion/
  │         └── fusion_bundle.pt
- ├── app.py                        # Streamlit Web Application Code
- ├── README.md                     # Documentation
- ├── .gitignore                    # Git file exclusions
- ├── requirements.txt              # Python packages dependencies list
- ├── 01_FER_Training_Testing.ipynb # FER Training Notebook
- ├── 02_SER_Training_Testing.ipynb # SER Training Notebook
- ├── 03_Multimodal_Testing_and_Evaluation.ipynb # Decision Fusion Evaluation
- └── 04_Personalized_Bedtime_Story_Generation.ipynb # Pipeline Demonstration
+ │
+ ├── models/                         # Package for NN architecture definitions
+ │    ├── __init__.py
+ │    ├── architectures.py           # AudioCNN, FusionMLP, SEBlock, ResidualBlock
+ │    └── loader.py                  # Streamlit @st.cache_resource model loader
+ │
+ ├── inference/                      # Package for modality prediction scripts
+ │    ├── __init__.py
+ │    ├── face.py                    # Facial crop quality & TTA inference
+ │    ├── audio.py                   # Mel-spectrogram & AudioCNN prediction
+ │    └── fusion.py                  # late-fusion + context/stabilization logic
+ │
+ ├── generation/                     # Package for text/tts/image generation
+ │    ├── __init__.py
+ │    ├── story.py                   # Gemini AI prompt generator + fallbacks
+ │    ├── tts.py                     # ElevenLabs & Edge-TTS (async-safe)
+ │    └── images.py                  # Pollinations AI pro illustration fetcher
+ │
+ ├── video/                          # Package for bedtime slideshow compilation
+ │    ├── __init__.py
+ │    └── assembler.py               # MoviePy video compilation + Pillow subtitle overlays
+ │
+ ├── ui/                             # Package for Streamlit modular components
+ │    ├── __init__.py
+ │    ├── styles.py                  # HSL color theme injection
+ │    ├── sidebar.py                 # Sidebar inputs (API keys & Gemini Model)
+ │    ├── input_panel.py             # Webcam feed & st_audiorec microphone widget
+ │    └── output_panel.py            # Rich output details (Badge, progress, download)
+ │
+ ├── 01_FER_Training_Testing.ipynb   # FER Model training & testing notebook
+ ├── 02_SER_Training_Testing.ipynb   # SER Model training & testing notebook
+ ├── 03_Multimodal_Testing_and_Evaluation.ipynb # Fusion testing & evaluation notebook
+ └── 04_Personalized_Bedtime_Story_Generation.ipynb # E2E prototype & demo notebook
 ```
 
 ---
@@ -67,9 +98,9 @@ cd emotion-recognition-dreamweaver
 ### 2. Download and Place Model Weights
 Since the model weights are too heavy for GitHub, they are excluded in `.gitignore`. 
 Download your trained weight files from Google Drive and place them in the correct directories:
-- Place `best_face_model_stage2_3class.pth` inside `models/facial/`
-- Place `ensemble_audio_model.pth` and `final_best_audio_model.pth` inside `models/audio/`
-- Place `fusion_bundle.pt` inside `models/fusion/`
+- Place `best_face_model_stage2_3class.pth` inside `model_weights/facial/`
+- Place `ensemble_audio_model.pth` and `final_best_audio_model.pth` inside `model_weights/audio/`
+- Place `fusion_bundle.pt` inside `model_weights/fusion/`
 
 ### 3. Install Python Dependencies
 Install all required libraries using the `requirements.txt` file:
