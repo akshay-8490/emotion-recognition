@@ -94,7 +94,9 @@ def generate_story(
 
     try:
         genai.configure(api_key=gemini_api_key.strip())
-        model_name = gemini_model_name.strip() if gemini_model_name.strip() else GEMINI_MODEL
+        raw_model_name = gemini_model_name.strip() if gemini_model_name.strip() else GEMINI_MODEL
+        # Clean model name (GenerativeModel works with or without models/ prefix)
+        model_name = raw_model_name.replace("models/", "")
         model = genai.GenerativeModel(model_name)
 
         prompt = f"""Write a soothing bedtime story for a child whose detected emotion is {emotion}.
@@ -130,6 +132,7 @@ Return ONLY valid JSON in this exact structure (no markdown fences):
         return story, scenes
 
     except Exception as e:
+        print(f"⚠️ Gemini story generation failed with model '{gemini_model_name}': {e}. Falling back to pre-written story.")
         # Fallback gracefully — don't crash the whole pipeline
         fallback = _FALLBACK_STORIES.get(emotion, _FALLBACK_STORIES["Neutral"])
         return (

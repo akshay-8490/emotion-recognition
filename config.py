@@ -50,12 +50,17 @@ CONTEXT_WINDOW     = 5
 CONTEXT_WEIGHT     = 0.15
 
 # ── Story Generation ──────────────────────────────────────────────────────────
-GEMINI_MODEL          = "gemini-2.5-flash"       # Default, overridable from sidebar
+GEMINI_MODEL          = "gemini-2.5-flash"       # Default free-tier model, overridable from sidebar
 GEMINI_MODEL_OPTIONS  = [
     "gemini-2.5-flash",
-    "gemini-2.5-pro",
+    "gemini-3.5-flash",
+    "gemini-1.5-flash",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
+    "gemini-1.5-flash-8b",
+    "gemini-2.5-pro",
+    "gemini-1.5-pro",
+    "Custom / Enter manually...",
 ]
 STORY_WORD_TARGET     = 200   # ~4 paragraphs
 SCENE_COUNT           = 4

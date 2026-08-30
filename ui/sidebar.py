@@ -6,8 +6,30 @@ Enhancement: includes Gemini model selection dropdown.
 """
 
 import streamlit as st
+import google.generativeai as genai
 
 from config import GEMINI_MODEL_OPTIONS
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def fetch_available_gemini_models(api_key: str) -> list:
+    """
+    Attempts to fetch available text generation models for the provided Gemini API key.
+    Filters models that support content generation and formats names cleanly.
+    """
+    if not api_key or not api_key.strip():
+        return []
+    try:
+        genai.configure(api_key=api_key.strip())
+        models = []
+        for m in genai.list_models():
+            methods = getattr(m, "supported_generation_methods", [])
+            if "generateContent" in methods:
+                name = m.name.replace("models/", "")
+                models.append(name)
+        return models
+    except Exception:
+        return []
 
 
 def render_sidebar() -> dict:
@@ -24,15 +46,37 @@ def render_sidebar() -> dict:
     gemini_key = st.sidebar.text_input(
         "Gemini API Key",
         type="password",
-        help="Required for dynamic story generation. Leave blank to use a built-in story.",
+        help="Required for dynamic story generation. Get a free tier key from Google AI Studio.",
     )
 
-    gemini_model = st.sidebar.selectbox(
+    available_models = []
+    if gemini_key.strip():
+        available_models = fetch_available_gemini_models(gemini_key.strip())
+
+    options = list(GEMINI_MODEL_OPTIONS)
+    if available_models:
+        # Prepend dynamically fetched models while preserving uniqueness
+        for m in reversed(available_models):
+            if m in options:
+                options.remove(m)
+            options.insert(0, m)
+        st.sidebar.caption(f"✨ Auto-detected {len(available_models)} models for your API key")
+
+    selected_option = st.sidebar.selectbox(
         "Gemini Model",
-        options=GEMINI_MODEL_OPTIONS,
+        options=options,
         index=0,
-        help="Choose which Gemini model to use for story generation.",
+        help="Choose a Gemini model (e.g. gemini-3.5-flash or gemini-2.5-flash for free tier).",
     )
+
+    if selected_option == "Custom / Enter manually...":
+        gemini_model = st.sidebar.text_input(
+            "Custom Model Identifier",
+            value="gemini-3.5-flash",
+            help="Enter any valid model name from Google AI Studio (e.g., gemini-3.5-flash, gemini-1.5-flash).",
+        ).strip()
+    else:
+        gemini_model = selected_option
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("**🎙️ Voice Narration**")
