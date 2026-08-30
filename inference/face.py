@@ -42,19 +42,28 @@ def run_face_prediction(cv_image: np.ndarray, face_model, face_detector) -> Dict
                         reliability, entropy
         If no face is detected, returns {"valid": False}.
     """
-    gray  = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-    faces = face_detector.detectMultiScale(
-        gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60)
-    )
-    if len(faces) == 0:
-        return {"valid": False}
+    faces = []
+    if face_detector is not None and hasattr(face_detector, "detectMultiScale"):
+        try:
+            gray  = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+            faces = face_detector.detectMultiScale(
+                gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60)
+            )
+        except Exception:
+            faces = []
 
-    # Pick the largest detected face
-    x, y, w, h = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
-    face_crop   = cv_image[y : y + h, x : x + w]
-    quality     = compute_face_quality(cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY))
+    if len(faces) > 0:
+        # Pick the largest detected face
+        x, y, w, h = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
+        face_crop   = cv_image[y : y + h, x : x + w]
+    else:
+        # Fall back to full image if no face bounding box found or detector unavailable
+        face_crop   = cv_image
 
-    pil_face = Image.fromarray(cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB))
+    gray_crop = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
+    quality   = compute_face_quality(gray_crop)
+
+    pil_face  = Image.fromarray(cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB))
 
     face_transform = transforms.Compose([
         transforms.Resize((224, 224)),

@@ -88,9 +88,25 @@ def load_all_models():
     fusion_model.load_state_dict(bundle["fusion_mlp_state"])
     fusion_model = fusion_model.to(device).eval()
 
-    # ── 4. Haar Cascade (OpenCV built-in, no weights file needed) ─────────────
-    face_detector = cv2.CascadeClassifier(
-        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    )
+    # ── 4. Haar Cascade (OpenCV built-in) ─────────────────────────────────────
+    face_detector = None
+    if hasattr(cv2, "CascadeClassifier"):
+        try:
+            xml_name = "haarcascade_frontalface_default.xml"
+            xml_path = None
+            if hasattr(cv2, "data") and hasattr(cv2.data, "haarcascades"):
+                xml_path = os.path.join(cv2.data.haarcascades, xml_name)
+            if not xml_path or not os.path.exists(xml_path):
+                if hasattr(cv2, "samples") and hasattr(cv2.samples, "findFile"):
+                    try:
+                        xml_path = cv2.samples.findFile(f"haarcascades/{xml_name}")
+                    except Exception:
+                        pass
+            if xml_path and os.path.exists(xml_path):
+                face_detector = cv2.CascadeClassifier(xml_path)
+            else:
+                face_detector = cv2.CascadeClassifier(xml_name)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not initialize OpenCV CascadeClassifier: {e}")
 
     return face_model, audio_models_list, fusion_model, face_detector
