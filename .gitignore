@@ -36,9 +36,6 @@ env/
 .streamlit/secrets.toml
 .env
 
-# Local project specific model weights (do not push heavy models to GitHub)
-model_weights/
-
 # Generated story outputs and temporary files
 *.mp4
 *.mp3
